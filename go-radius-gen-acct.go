@@ -156,26 +156,6 @@ func (cfg *Config) CliCreate() {
 	}
 }
 
-func StartDaemon() {
-	cntxt := &daemon.Context{
-		PidFileName: "pid",
-		PidFilePerm: 0644,
-		LogFileName: "/tmp/go.log",
-		LogFilePerm: 0640,
-		WorkDir:     "./",
-		Umask:       027,
-	}
-	d, err := cntxt.Reborn()
-	if err != nil {
-		log.Fatal("Unable to run: ", err)
-	}
-	if d != nil {
-		return
-	}
-	defer cntxt.Release()
-	log.Print("daemon started")
-}
-
 func main() {
 	cfg := CliConfig()
 	// calcule for get the number of requests per second
@@ -183,7 +163,24 @@ func main() {
 	var count uint64
 
 	if cfg.Daemon {
-		StartDaemon()
+		cntxt := &daemon.Context{
+			PidFileName: "pid",
+			PidFilePerm: 0644,
+			LogFileName: "/tmp/go.log",
+			LogFilePerm: 0640,
+			WorkDir:     "./",
+			Umask:       027,
+		}
+		d, err := cntxt.Reborn()
+		if err != nil {
+			log.Fatal("Unable to run: ", err)
+		}
+		if d != nil {
+			return
+		}
+		defer cntxt.Release()
+		log.Print("daemon started")
+
 	}
 
 	for i := 0; i < cfg.MaxReq; i++ {
