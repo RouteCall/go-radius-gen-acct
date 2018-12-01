@@ -4,7 +4,6 @@ import (
 	"./cdr"
 	"./rfc2866"
 	"context"
-	//"fmt"
 	"github.com/urfave/cli"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
@@ -15,9 +14,11 @@ import (
 	"time"
 )
 
+// max int value
 const MaxUint = ^uint(0)
 const MaxInt = int(MaxUint >> 1)
 
+// config struct with all user options
 type Config struct {
 	NASPort      int
 	NASIPAddress string
@@ -29,6 +30,7 @@ type Config struct {
 	ShowCount    bool
 }
 
+// parse struct CdrValues to radius packet
 func ParseCdrAttributes(p *radius.Packet, c *cdr.CdrValues, cfg Config) {
 	rfc2866.SipAcctStatusType_Add(p, rfc2866.SipAcctStatusType_Value_Stop)
 	rfc2866.SipServiceType_Add(p, rfc2866.SipServiceType_Value_SipSession)
@@ -48,6 +50,7 @@ func ParseCdrAttributes(p *radius.Packet, c *cdr.CdrValues, cfg Config) {
 	return
 }
 
+// send the radius Accounting-Request package to server
 func SendAcct(c *cdr.CdrValues, cfg Config) {
 	packet := radius.New(radius.CodeAccountingRequest, []byte(cfg.Key))
 	ParseCdrAttributes(packet, c, cfg)
@@ -57,6 +60,7 @@ func SendAcct(c *cdr.CdrValues, cfg Config) {
 	}
 }
 
+// create and set the Config struct
 func CliConfig() Config {
 	cfg := Config{}
 	cfg.CliCreate()
@@ -64,6 +68,7 @@ func CliConfig() Config {
 	return cfg
 }
 
+// cli - command-line
 func (cfg *Config) CliCreate() {
 	parsed := false
 	app := cli.NewApp()
@@ -118,6 +123,7 @@ func (cfg *Config) CliCreate() {
 		},
 	}
 
+	// options required
 	app.Action = func(c *cli.Context) error {
 		if cfg.PPS <= 0 {
 			return cli.NewExitError("pps must be greater 0", 1)
@@ -143,11 +149,14 @@ func (cfg *Config) CliCreate() {
 
 func main() {
 	cfg := CliConfig()
+	// calcule for get the number of requests per second
 	sleep := 1000 / cfg.PPS
 	var count uint64
 
 	for i := 0; i < cfg.MaxReq; i++ {
 		go func() {
+			// -c count option
+			// I hope the compiler solve this if
 			if cfg.ShowCount {
 				atomic.AddUint64(&count, 1)
 			}
@@ -155,6 +164,8 @@ func main() {
 			go SendAcct(c, cfg)
 		}()
 		time.Sleep(time.Duration(sleep) * time.Millisecond)
+		// -c count option
+		// I hope the compiler solve this if
 		if cfg.ShowCount {
 			log.Print("total count accounting-request: ", atomic.LoadUint64(&count))
 		}
