@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/routecall/go-radius-gen-acct/cdr"
 	"github.com/routecall/go-radius-gen-acct/rfc2866"
+	"github.com/sevlyar/go-daemon"
 	"github.com/urfave/cli"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
@@ -28,6 +29,7 @@ type Config struct {
 	PPS          int
 	MaxReq       int
 	ShowCount    bool
+	Daemon       bool
 }
 
 // parse struct CdrValues to radius packet
@@ -121,6 +123,10 @@ func (cfg *Config) CliCreate() {
 			Name:  "c",
 			Usage: "show count of requests",
 		},
+		cli.BoolFlag{
+			Name:  "d",
+			Usage: "daemon (background) proccess",
+		},
 	}
 
 	// options required
@@ -137,6 +143,9 @@ func (cfg *Config) CliCreate() {
 		if c.Bool("c") {
 			cfg.ShowCount = true
 		}
+		if c.Bool("d") {
+			cfg.Daemon = true
+		}
 		parsed = true
 		return nil
 	}
@@ -147,11 +156,35 @@ func (cfg *Config) CliCreate() {
 	}
 }
 
+func StartDaemon() {
+	cntxt := &daemon.Context{
+		PidFileName: "pid",
+		PidFilePerm: 0644,
+		LogFileName: "/tmp/go.log",
+		LogFilePerm: 0640,
+		WorkDir:     "./",
+		Umask:       027,
+	}
+	d, err := cntxt.Reborn()
+	if err != nil {
+		log.Fatal("Unable to run: ", err)
+	}
+	if d != nil {
+		return
+	}
+	defer cntxt.Release()
+	log.Print("daemon started")
+}
+
 func main() {
 	cfg := CliConfig()
 	// calcule for get the number of requests per second
 	sleep := 1000 / cfg.PPS
 	var count uint64
+
+	if cfg.Daemon {
+		StartDaemon()
+	}
 
 	for i := 0; i < cfg.MaxReq; i++ {
 		go func() {
