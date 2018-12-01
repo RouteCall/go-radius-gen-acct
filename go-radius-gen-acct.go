@@ -30,6 +30,8 @@ type Config struct {
 	MaxReq       int
 	ShowCount    bool
 	Daemon       bool
+	LogFileName  string
+	PidFileName  string
 }
 
 // parse struct CdrValues to radius packet
@@ -75,7 +77,8 @@ func (cfg *Config) CliCreate() {
 	parsed := false
 	app := cli.NewApp()
 	app.Usage = "A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing"
-	app.Version = "0.10.1"
+	app.UsageText = "go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866)."
+	app.Version = "0.10.3"
 	app.Compiled = time.Now()
 
 	app.Flags = []cli.Flag{
@@ -127,6 +130,18 @@ func (cfg *Config) CliCreate() {
 			Name:  "d",
 			Usage: "daemon (background) proccess",
 		},
+		cli.StringFlag{
+			Name:        "log-file",
+			Value:       "./go-radius-gen-acct.log",
+			Usage:       "the destination file of the log",
+			Destination: &cfg.LogFileName,
+		},
+		cli.StringFlag{
+			Name:        "pid-file",
+			Value:       "./go-radius-gen-acct.pid",
+			Usage:       "file to save the pid of daemon",
+			Destination: &cfg.PidFileName,
+		},
 	}
 
 	// options required
@@ -164,9 +179,9 @@ func main() {
 
 	if cfg.Daemon {
 		cntxt := &daemon.Context{
-			PidFileName: "pid",
+			PidFileName: cfg.PidFileName,
 			PidFilePerm: 0644,
-			LogFileName: "/tmp/go.log",
+			LogFileName: cfg.LogFileName,
 			LogFilePerm: 0640,
 			WorkDir:     "./",
 			Umask:       027,
