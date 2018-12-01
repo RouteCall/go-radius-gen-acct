@@ -1,0 +1,47 @@
+ATTRIBUTE     Sip-From-Tag         101  string
+ATTRIBUTE     Sip-Method           102  integer
+ATTRIBUTE     Sip-Response-Code    103  string
+ATTRIBUTE     Sip-To-Tag           104  string
+ATTRIBUTE     Sip-Call-Id          105  string
+ATTRIBUTE     Sip-Caller-Id        110  string
+ATTRIBUTE     Sip-Callee-Id        111  string
+ATTRIBUTE     Sip-Dst-Number       112  string
+ATTRIBUTE     Sip-End-Reason       113  string
+ATTRIBUTE     Sip-Session          114  string
+ATTRIBUTE     Sip-Call-Reason      115  string
+ATTRIBUTE     Sip-Call-Duration    116  integer
+ATTRIBUTE     Sip-Call-MSDuration  117  integer
+ATTRIBUTE     Sip-Call-Setuptime   118  integer
+ATTRIBUTE     Sip-Call-Created     119  string
+ATTRIBUTE     Sip-Acct-Status-Type     120  integer
+ATTRIBUTE     Sip-Service-Type         122  integer
+ATTRIBUTE     Sip-Event-Timestamp      123  date
+ATTRIBUTE     Sip-Acct-Session-Id      124  string
+
+VALUE		Sip-Acct-Status-Type	Start			1
+VALUE		Sip-Acct-Status-Type	Stop			2
+VALUE		Sip-Acct-Status-Type	Alive			3
+VALUE		Sip-Acct-Status-Type	Failed    15
+VALUE		Sip-Acct-Status-Type	Sip-Session 15
+
+VALUE   Sip-Service-Type      Sip-Session   15
+#VALUE         Acct-Status-Type  Failed              15
+#VALUE         Service-Type      SIP-Session         15
+
+### Sip-Method Values ###
+VALUE         Sip-Method         Undefined      0
+VALUE         Sip-Method         INVITE         1
+VALUE         Sip-Method         CANCEL         2
+VALUE         Sip-Method         ACK            4
+VALUE         Sip-Method         BYE            8
+VALUE         Sip-Method         INFO           16
+VALUE         Sip-Method         OPTIONS        32
+VALUE         Sip-Method         UPDATE         64
+VALUE         Sip-Method         REGISTER       128
+VALUE         Sip-Method         MESSAGE        256
+VALUE         Sip-Method         SUBSCRIBE      512
+VALUE         Sip-Method         NOTIFY         1024
+VALUE         Sip-Method         PRACK          2048
+VALUE         Sip-Method         REFER          4096
+VALUE         Sip-Method         OTHER          8192
+
