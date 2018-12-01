@@ -1,3 +1,4 @@
+```
 # go-radius-gen-acct --help
 NAME:
    go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing
@@ -23,3 +24,4 @@ GLOBAL OPTIONS:
    --help, -h                 show help
    --version, -v              print the version
    
+```
