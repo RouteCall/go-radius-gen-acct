@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/bxcodec/faker"
 	"github.com/bxcodec/faker/support/slice"
-	//"layeh.com/radius"
-	//"layeh.com/radius/rfc2865"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -28,6 +26,7 @@ type CdrValues struct {
 	DstNumber      string
 }
 
+// random ResponseCode in a collection
 func ResponseCode() string {
 	codes := []string{
 		"200",
@@ -37,6 +36,7 @@ func ResponseCode() string {
 	return codes[rand.Int()%len(codes)]
 }
 
+// generate brazilian phone number on default E164
 func PhoneNumberBrazil() string {
 	out := ""
 	box_numbers := []string{
@@ -54,12 +54,7 @@ func PhoneNumberBrazil() string {
 	return fmt.Sprintf("55%s9%s", box_numbers[rand.Int()%len(box_numbers)], strings.Join(slice.IntToString(ints), ""))
 }
 
-func EventDate() time.Time {
-	//t := time.Now()
-	//return t.Format("Jan 2 2006 03:04:05 -07")
-	return time.Now()
-}
-
+// generate ms_duration, setuptime based on sip_code
 func CdrTimers(c int) (int, int) {
 	st := rand.Intn(30)
 
@@ -74,6 +69,7 @@ func CdrTimers(c int) (int, int) {
 	return ms, st
 }
 
+// random Addresses IPV4 in a collection
 func Addresses() (string, string) {
 	s := []string{
 		"200.200.200.200",
@@ -87,6 +83,7 @@ func Addresses() (string, string) {
 	return s[rand.Int()%len(s)], d[rand.Int()%len(d)]
 }
 
+// create and set all struct CdrValues with generated data
 func FillCdr() *CdrValues {
 	src_ip, dst_ip := Addresses()
 	r := ResponseCode()
@@ -98,7 +95,7 @@ func FillCdr() *CdrValues {
 		ServiceType:    15,
 		ResponseCode:   r,
 		Method:         "INVITE",
-		EventTimestamp: EventDate(),
+		EventTimestamp: time.Now(),
 		FromTag:        faker.GetIdentifier().Digit()[:16],
 		ToTag:          faker.GetIdentifier().Digit()[:8],
 		AcctSessionId:  faker.GetIdentifier().Digit()[:12] + "@" + src_ip,
