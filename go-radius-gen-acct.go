@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./cdr"
-	"./rfc2866"
 	"context"
+	"github.com/routecall/go-radius-gen-acct/cdr"
+	"github.com/routecall/go-radius-gen-acct/rfc2866"
 	"github.com/urfave/cli"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
