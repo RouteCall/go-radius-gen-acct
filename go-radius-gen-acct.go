@@ -78,7 +78,7 @@ func (cfg *Config) CliCreate() {
 	app := cli.NewApp()
 	app.Usage = "A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing"
 	app.UsageText = "go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866)."
-	app.Version = "0.10.5"
+	app.Version = "0.11.0"
 	app.Compiled = time.Now()
 
 	app.Flags = []cli.Flag{
@@ -173,9 +173,10 @@ func (cfg *Config) CliCreate() {
 
 func main() {
 	cfg := CliConfig()
-	// calcule for get the number of requests per second
-	sleep := 1000 / cfg.PPS
 	var countTotal uint64
+	// calcule rate limit (pps)
+	rate := time.Second / time.Duration(cfg.PPS)
+	limitPPS := time.Tick(rate)
 
 	if cfg.Daemon {
 		cntxt := &daemon.Context{
@@ -214,6 +215,7 @@ func main() {
 	}()
 
 	for i := 0; i < cfg.MaxReq; i++ {
+		<-limitPPS //rate limit
 		go func() {
 			// -c count option
 			// I hope the compiler solve this if
@@ -223,7 +225,6 @@ func main() {
 			c := cdr.FillCdr()
 			go SendAcct(c, cfg)
 		}()
-		time.Sleep(time.Duration(sleep) * time.Millisecond)
 	}
 
 }
