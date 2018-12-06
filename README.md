@@ -1,5 +1,5 @@
 ```sh
-go-radius-gen-acct --help
+go-radius-gen-acct.go --help
 NAME:
    go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing
 
@@ -7,7 +7,7 @@ USAGE:
    go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866).
 
 VERSION:
-   0.10.5
+   0.11.0
 
 COMMANDS:
      help, h  Shows a list of commands or help for one command
@@ -49,3 +49,4 @@ tail /tmp/go-radius-gen-acct.log
 2018/12/05 22:44:11 estimated accounting-request per second:  196
 2018/12/05 22:44:11 total count accounting-request:           67383
 ```
+
