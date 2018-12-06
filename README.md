@@ -7,7 +7,7 @@ USAGE:
    go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866).
 
 VERSION:
-   0.10.3
+   0.10.5
 
 COMMANDS:
      help, h  Shows a list of commands or help for one command
@@ -36,4 +36,16 @@ go-radius-gen-acct --pps 10 --server 242.95.79.224 --port 1813 --nas-ip 199.143.
 
 # run on the shell, get counts and the max number of requests is 100
 go-radius-gen-acct --pps 10 --server 242.95.79.224 --port 1813 --nas-ip 199.143.213.200 --nas-port 5666 --key 4fW5xa28ba38e4e60d0wk187sdfi17454ef524x0z -c --max-req 100
+```
+---
+```sh
+# stats per second
+tail /tmp/go-radius-gen-acct.log
+2018/12/05 22:44:10 Stats [refresh 1s]:
+2018/12/05 22:44:10 estimated accounting-request per second:  195
+2018/12/05 22:44:10 total count accounting-request:           67187
+2018/12/05 22:44:11
+2018/12/05 22:44:11 Stats [refresh 1s]:
+2018/12/05 22:44:11 estimated accounting-request per second:  196
+2018/12/05 22:44:11 total count accounting-request:           67383
 ```
