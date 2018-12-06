@@ -78,7 +78,7 @@ func (cfg *Config) CliCreate() {
 	app := cli.NewApp()
 	app.Usage = "A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing"
 	app.UsageText = "go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866)."
-	app.Version = "0.10.3"
+	app.Version = "0.10.5"
 	app.Compiled = time.Now()
 
 	app.Flags = []cli.Flag{
@@ -175,7 +175,7 @@ func main() {
 	cfg := CliConfig()
 	// calcule for get the number of requests per second
 	sleep := 1000 / cfg.PPS
-	var count uint64
+	var countTotal uint64
 
 	if cfg.Daemon {
 		cntxt := &daemon.Context{
@@ -198,22 +198,32 @@ func main() {
 
 	}
 
+	go func() {
+		for {
+			countTotalS := atomic.LoadUint64(&countTotal)
+			time.Sleep(1000 * time.Millisecond)
+			// -c count option
+			// I hope the compiler solve this if
+			if cfg.ShowCount {
+				log.Print("")
+				log.Print("Stats [refresh 1s]:")
+				log.Print("estimated accounting-request per second:  ", atomic.LoadUint64(&countTotal)-countTotalS)
+				log.Print("total count accounting-request:           ", atomic.LoadUint64(&countTotal))
+			}
+		}
+	}()
+
 	for i := 0; i < cfg.MaxReq; i++ {
 		go func() {
 			// -c count option
 			// I hope the compiler solve this if
 			if cfg.ShowCount {
-				atomic.AddUint64(&count, 1)
+				atomic.AddUint64(&countTotal, 1)
 			}
 			c := cdr.FillCdr()
 			go SendAcct(c, cfg)
 		}()
 		time.Sleep(time.Duration(sleep) * time.Millisecond)
-		// -c count option
-		// I hope the compiler solve this if
-		if cfg.ShowCount {
-			log.Print("total count accounting-request: ", atomic.LoadUint64(&count))
-		}
 	}
 
 }
