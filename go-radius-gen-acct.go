@@ -11,6 +11,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -56,10 +57,22 @@ func ParseCdrAttributes(p *radius.Packet, c *cdr.CdrValues, cfg Config) {
 
 // send the radius Accounting-Request package to server
 func SendAcct(c *cdr.CdrValues, cfg Config) {
+	client := radius.Client{
+		Retry:           time.Second * 3,
+		MaxPacketErrors: 10,
+	}
 	packet := radius.New(radius.CodeAccountingRequest, []byte(cfg.Key))
 	ParseCdrAttributes(packet, c, cfg)
-	_, err := radius.Exchange(context.Background(), packet, cfg.Server+":"+cfg.Port)
+
+	//// timeout 3s
+	//ctx, cancel := context.WithTimeout(context.Background(), -time.Second)
+	//defer cancel()
+
+	_, err := client.Exchange(context.Background(), packet, cfg.Server+":"+cfg.Port)
+	//_, err := client.Exchange(ctx, packet, cfg.Server+":"+cfg.Port)
+	//uddulog.Print("response code: ", response.Code)
 	if err != nil {
+		log.Fatal("error: ", err)
 		os.Exit(1)
 	}
 }
@@ -78,7 +91,7 @@ func (cfg *Config) CliCreate() {
 	app := cli.NewApp()
 	app.Usage = "A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing"
 	app.UsageText = "go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866)."
-	app.Version = "0.11.0"
+	app.Version = "0.11.3"
 	app.Compiled = time.Now()
 
 	app.Flags = []cli.Flag{
@@ -177,6 +190,7 @@ func main() {
 	// calcule rate limit (pps)
 	rate := time.Second / time.Duration(cfg.PPS)
 	limitPPS := time.Tick(rate)
+	var wg sync.WaitGroup
 
 	if cfg.Daemon {
 		cntxt := &daemon.Context{
@@ -200,7 +214,12 @@ func main() {
 	}
 
 	go func() {
+		defer wg.Done()
+		wg.Add(1)
 		for {
+			if atomic.LoadUint64(&countTotal) >= uint64(cfg.MaxReq) {
+				break
+			}
 			countTotalS := atomic.LoadUint64(&countTotal)
 			time.Sleep(1000 * time.Millisecond)
 			// -c count option
@@ -215,16 +234,18 @@ func main() {
 	}()
 
 	for i := 0; i < cfg.MaxReq; i++ {
-		<-limitPPS //rate limit
+		wg.Add(1)
 		go func() {
+			defer wg.Done()
+			<-limitPPS //rate limit
 			// -c count option
 			// I hope the compiler solve this if
 			if cfg.ShowCount {
 				atomic.AddUint64(&countTotal, 1)
 			}
 			c := cdr.FillCdr()
-			go SendAcct(c, cfg)
+			SendAcct(c, cfg)
 		}()
 	}
-
+	wg.Wait()
 }
