@@ -7,7 +7,7 @@ USAGE:
    go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866).
 
 VERSION:
-   0.11.5
+   0.11.6
 
 COMMANDS:
      help, h  Shows a list of commands or help for one command
