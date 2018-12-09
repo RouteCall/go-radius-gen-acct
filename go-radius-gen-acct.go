@@ -33,6 +33,7 @@ type Config struct {
 	Daemon       bool
 	LogFileName  string
 	PidFileName  string
+	Retry        int
 }
 
 // parse struct CdrValues to radius packet
@@ -58,8 +59,8 @@ func ParseCdrAttributes(p *radius.Packet, c *cdr.CdrValues, cfg Config) {
 // send the radius Accounting-Request package to server
 func SendAcct(c *cdr.CdrValues, cfg Config) {
 	client := radius.Client{
-		Retry:           time.Second * 3,
-		MaxPacketErrors: 10,
+		Retry:           time.Second * time.Duration(cfg.Retry),
+		MaxPacketErrors: 0,
 	}
 	packet := radius.New(radius.CodeAccountingRequest, []byte(cfg.Key))
 	ParseCdrAttributes(packet, c, cfg)
@@ -91,7 +92,7 @@ func (cfg *Config) CliCreate() {
 	app := cli.NewApp()
 	app.Usage = "A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing"
 	app.UsageText = "go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866)."
-	app.Version = "0.11.3"
+	app.Version = "0.11.5"
 	app.Compiled = time.Now()
 
 	app.Flags = []cli.Flag{
@@ -134,6 +135,12 @@ func (cfg *Config) CliCreate() {
 			Value:       MaxInt,
 			Usage:       "stop the test and exit when max-req are reached",
 			Destination: &cfg.MaxReq,
+		},
+		cli.IntFlag{
+			Name:        "retry-int, r",
+			Value:       3,
+			Usage:       "interval in second, on which to resend packet (zero or negative value means no retry)",
+			Destination: &cfg.Retry,
 		},
 		cli.BoolFlag{
 			Name:  "c",
@@ -214,8 +221,8 @@ func main() {
 	}
 
 	go func() {
-		defer wg.Done()
 		wg.Add(1)
+		defer wg.Done()
 		for {
 			if atomic.LoadUint64(&countTotal) >= uint64(cfg.MaxReq) {
 				break
@@ -236,8 +243,8 @@ func main() {
 	for i := 0; i < cfg.MaxReq; i++ {
 		wg.Add(1)
 		go func() {
-			defer wg.Done()
 			<-limitPPS //rate limit
+			defer wg.Done()
 			// -c count option
 			// I hope the compiler solve this if
 			if cfg.ShowCount {
