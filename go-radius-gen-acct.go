@@ -2,6 +2,13 @@ package main
 
 import (
 	"context"
+	"log"
+	"net"
+	"os"
+	"sync"
+	"sync/atomic"
+	"time"
+
 	"github.com/routecall/go-radius-gen-acct/cdr"
 	"github.com/routecall/go-radius-gen-acct/rfc2866"
 	"github.com/sevlyar/go-daemon"
@@ -9,12 +16,6 @@ import (
 	"go.uber.org/ratelimit"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
-	"log"
-	"net"
-	"os"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 // max int value
@@ -138,11 +139,11 @@ func (cfg *Config) CliCreate() {
 			Destination: &cfg.Retry,
 		},
 		cli.BoolFlag{
-			Name:  "c",
+			Name:  "stats, c",
 			Usage: "show count of requests",
 		},
 		cli.BoolFlag{
-			Name:  "d",
+			Name:  "daemon, d",
 			Usage: "daemon (background) proccess",
 		},
 		cli.StringFlag{
@@ -186,6 +187,25 @@ func (cfg *Config) CliCreate() {
 	}
 }
 
+func LogStats(wg *sync.WaitGroup, c Config, t *uint64) {
+	defer wg.Done()
+	for {
+		countTotalS := atomic.LoadUint64(t)
+		if countTotalS >= uint64(c.MaxReq) {
+			break
+		}
+		time.Sleep(1000 * time.Millisecond)
+		// -c count option
+		// I hope the compiler solve this if
+		if c.ShowCount {
+			log.Print("")
+			log.Print("Stats [refresh 1s]:")
+			log.Print("estimated accounting-request per second:  ", atomic.LoadUint64(t)-countTotalS)
+			log.Print("total count accounting-request:           ", atomic.LoadUint64(t))
+		}
+	}
+}
+
 func main() {
 	cfg := CliConfig()
 	var countTotal uint64
@@ -211,28 +231,12 @@ func main() {
 		}
 		defer cntxt.Release()
 		log.Print("daemon started")
-
 	}
 
 	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for {
-			if atomic.LoadUint64(&countTotal) >= uint64(cfg.MaxReq) {
-				break
-			}
-			countTotalS := atomic.LoadUint64(&countTotal)
-			time.Sleep(1000 * time.Millisecond)
-			// -c count option
-			// I hope the compiler solve this if
-			if cfg.ShowCount {
-				log.Print("")
-				log.Print("Stats [refresh 1s]:")
-				log.Print("estimated accounting-request per second:  ", atomic.LoadUint64(&countTotal)-countTotalS)
-				log.Print("total count accounting-request:           ", atomic.LoadUint64(&countTotal))
-			}
-		}
-	}()
+	if cfg.ShowCount {
+		LogStats(&wg, cfg, &countTotal)
+	}
 
 	for i := 0; i < cfg.MaxReq; i++ {
 		_ = rl.Take()
