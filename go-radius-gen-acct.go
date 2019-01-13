@@ -88,7 +88,7 @@ func (cfg *Config) CliCreate() {
 	app := cli.NewApp()
 	app.Usage = "A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing"
 	app.UsageText = "go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866)."
-	app.Version = "0.11.7"
+	app.Version = "0.11.8"
 	app.Compiled = time.Now()
 
 	app.Flags = []cli.Flag{
@@ -233,9 +233,9 @@ func main() {
 		log.Print("daemon started")
 	}
 
-	wg.Add(1)
 	if cfg.ShowCount {
-		LogStats(&wg, cfg, &countTotal)
+		wg.Add(1)
+		go LogStats(&wg, cfg, &countTotal)
 	}
 
 	for i := 0; i < cfg.MaxReq; i++ {
@@ -243,11 +243,7 @@ func main() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			// -c count option
-			// I hope the compiler solve this if
-			if cfg.ShowCount {
-				atomic.AddUint64(&countTotal, 1)
-			}
+			atomic.AddUint64(&countTotal, 1)
 			c := cdr.FillCdr()
 			SendAcct(c, cfg)
 		}()
