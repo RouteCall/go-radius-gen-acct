@@ -20,6 +20,8 @@ import (
 	"layeh.com/radius/rfc2865"
 )
 
+const Version = "0.12.0"
+
 // max int value
 const MaxUint = ^uint(0)
 const MaxInt = int(MaxUint >> 1)
@@ -105,7 +107,7 @@ func (cfg *Config) CliCreate() {
 	app := cli.NewApp()
 	app.Usage = "A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing"
 	app.UsageText = "go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866)."
-	app.Version = "0.11.8"
+	app.Version = Version
 	app.Compiled = time.Now()
 
 	app.Flags = []cli.Flag{
