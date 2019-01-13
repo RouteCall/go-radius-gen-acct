@@ -88,7 +88,7 @@ func (cfg *Config) CliCreate() {
 	app := cli.NewApp()
 	app.Usage = "A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing"
 	app.UsageText = "go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866)."
-	app.Version = "0.11.6.1"
+	app.Version = "0.11.7"
 	app.Compiled = time.Now()
 
 	app.Flags = []cli.Flag{
