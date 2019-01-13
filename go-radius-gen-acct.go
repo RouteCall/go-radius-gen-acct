@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -36,6 +37,7 @@ type Config struct {
 	LogFileName  string
 	PidFileName  string
 	Retry        int
+	CustomFields string
 }
 
 // parse struct CdrValues to radius packet
@@ -158,6 +160,12 @@ func (cfg *Config) CliCreate() {
 			Usage:       "file to save the pid of daemon",
 			Destination: &cfg.PidFileName,
 		},
+		cli.StringFlag{
+			Name:        "custom-fields",
+			Value:       "",
+			Usage:       "--custom-fields \"ID=Value,ID=Value\"",
+			Destination: &cfg.CustomFields,
+		},
 	}
 
 	// options required
@@ -206,6 +214,10 @@ func LogStats(wg *sync.WaitGroup, c Config, t *uint64) {
 	}
 }
 
+func ParseCustomFields(c string) {
+	log.Println("split = ", strings.Split(c, ","))
+}
+
 func main() {
 	cfg := CliConfig()
 	var countTotal uint64
@@ -249,6 +261,9 @@ func main() {
 				atomic.AddUint64(&countTotal, 1)
 			}
 			c := cdr.FillCdr()
+			if len(cfg.CustomFields) > 0 {
+				ParseCustomFields(cfg.CustomFields)
+			}
 			SendAcct(c, cfg)
 		}()
 	}

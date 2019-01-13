@@ -7,7 +7,7 @@ USAGE:
    go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866).
 
 VERSION:
-   0.11.6
+   0.11.8
 
 COMMANDS:
      help, h  Shows a list of commands or help for one command
@@ -21,8 +21,8 @@ GLOBAL OPTIONS:
    --key value, -k value        key for acct
    --max-req value, -m value    stop the test and exit when max-req are reached (default: 9223372036854775807)
    --retry-int value, -r value  interval in second, on which to resend packet (zero or negative value means no retry) (default: 3)
-   -c                           show count of requests
-   -d                           daemon (background) proccess
+   --stats, -c                  show count of requests
+   --daemon, -d                 daemon (background) proccess
    --log-file value             the destination file of the log (default: "./go-radius-gen-acct.log")
    --pid-file value             file to save the pid of daemon (default: "./go-radius-gen-acct.pid")
    --help, -h                   show help
