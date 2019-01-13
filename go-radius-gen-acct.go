@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -40,6 +41,17 @@ type Config struct {
 	CustomFields string
 }
 
+// used for --custom-fields
+type CustomFields struct {
+	ID    radius.Type
+	Value string
+}
+type MapCustomFields map[int]CustomFields
+
+func NewMapCustomFields() MapCustomFields {
+	return make(MapCustomFields)
+}
+
 // parse struct CdrValues to radius packet
 func ParseCdrAttributes(p *radius.Packet, c *cdr.CdrValues, cfg Config) {
 	rfc2866.SipAcctStatusType_Add(p, rfc2866.SipAcctStatusType_Value_Stop)
@@ -61,13 +73,16 @@ func ParseCdrAttributes(p *radius.Packet, c *cdr.CdrValues, cfg Config) {
 }
 
 // send the radius Accounting-Request package to server
-func SendAcct(c *cdr.CdrValues, cfg Config) {
+func SendAcct(c *cdr.CdrValues, mcf MapCustomFields, cfg Config) {
 	client := radius.Client{
 		Retry:           time.Second * time.Duration(cfg.Retry),
 		MaxPacketErrors: 0,
 	}
 	packet := radius.New(radius.CodeAccountingRequest, []byte(cfg.Key))
 	ParseCdrAttributes(packet, c, cfg)
+	if mcf != nil {
+		AddCustomField(packet, mcf)
+	}
 
 	_, err := client.Exchange(context.Background(), packet, cfg.Server+":"+cfg.Port)
 	if err != nil {
@@ -214,8 +229,35 @@ func LogStats(wg *sync.WaitGroup, c Config, t *uint64) {
 	}
 }
 
-func ParseCustomFields(c string) {
-	log.Println("split = ", strings.Split(c, ","))
+func ParseCustomFields(c string) (MapCustomFields, error) {
+	mapCustomFields := NewMapCustomFields()
+	attrs := strings.Split(c, ",")
+	for k, att := range attrs {
+		s := strings.Split(att, "=")
+		id, err := strconv.Atoi(s[0])
+		if err != nil {
+			return nil, err
+		}
+		mapCustomFields[k] = CustomFields{radius.Type(id), s[1]}
+	}
+	return mapCustomFields, nil
+}
+
+func AddCustomField(p *radius.Packet, mcf MapCustomFields) {
+	for _, c := range mcf {
+		p.Add(c.ID, []byte(c.Value))
+	}
+}
+
+func GetMapCustomFields(c string) (MapCustomFields, error) {
+	if len(c) > 0 {
+		mapCustomFields, err := ParseCustomFields(c)
+		if err != nil {
+			return nil, err
+		}
+		return mapCustomFields, nil
+	}
+	return nil, nil
 }
 
 func main() {
@@ -257,10 +299,8 @@ func main() {
 			defer wg.Done()
 			atomic.AddUint64(&countTotal, 1)
 			c := cdr.FillCdr()
-			if len(cfg.CustomFields) > 0 {
-				ParseCustomFields(cfg.CustomFields)
-			}
-			SendAcct(c, cfg)
+			mapCustomFields, _ := GetMapCustomFields(cfg.CustomFields)
+			SendAcct(c, mapCustomFields, cfg)
 		}()
 	}
 
