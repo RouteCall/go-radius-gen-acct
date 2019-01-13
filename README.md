@@ -7,7 +7,7 @@ USAGE:
    go-radius-gen-acct - A Go (golang) RADIUS client accounting (RFC 2866) implementation for perfomance testing with generated data according dictionary (./dictionary.routecall.opensips) and RFC2866 (./rfc2866).
 
 VERSION:
-   0.11.8
+   0.12.0
 
 COMMANDS:
      help, h  Shows a list of commands or help for one command
@@ -25,6 +25,7 @@ GLOBAL OPTIONS:
    --daemon, -d                 daemon (background) proccess
    --log-file value             the destination file of the log (default: "./go-radius-gen-acct.log")
    --pid-file value             file to save the pid of daemon (default: "./go-radius-gen-acct.pid")
+   --custom-fields value        --custom-fields "ID=Value,ID=Value"
    --help, -h                   show help
    --version, -v                print the version
 ```
