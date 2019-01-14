@@ -48,4 +48,4 @@ tail /tmp/go-radius-gen-acct.log
 \`\`\`
 " >> "${DST_README}"
 
-git add README.md && git commit -m '[make_readme.sh] auto generated' && git push origin master
+git add README.md && git commit -m '[make_readme.sh] auto generated' && git push origin dev
