@@ -2,12 +2,13 @@ package cdr
 
 import (
 	"fmt"
-	"github.com/bxcodec/faker"
-	"github.com/bxcodec/faker/support/slice"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bxcodec/faker"
+	"github.com/bxcodec/faker/support/slice"
 )
 
 type CdrValues struct {
@@ -89,7 +90,8 @@ func FillCdr() *CdrValues {
 	r := ResponseCode()
 	ri, _ := strconv.Atoi(r)
 	ms, st := CdrTimers(ri)
-	d := PhoneNumberBrazil()
+	dr := PhoneNumberBrazil()
+	de := PhoneNumberBrazil()
 	return &CdrValues{
 		AcctStatusType: 4,
 		ServiceType:    15,
@@ -101,8 +103,8 @@ func FillCdr() *CdrValues {
 		AcctSessionId:  faker.GetIdentifier().Digit()[:12] + "@" + src_ip,
 		MsDuration:     ms,
 		SetupTime:      st,
-		CallerId:       "sip:goradiustest@" + src_ip + ":5077",
-		CalleeId:       "sip:" + d + "@" + dst_ip + ":5060",
+		CallerId:       "sip:" + dr + "@" + src_ip + ":5077",
+		CalleeId:       "sip:" + de + "@" + dst_ip + ":5060",
 		DstNumber:      d,
 	}
 }
