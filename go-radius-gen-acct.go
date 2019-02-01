@@ -13,14 +13,14 @@ import (
 
 	"github.com/routecall/go-radius-gen-acct/cdr"
 	"github.com/routecall/go-radius-gen-acct/rfc2866"
-	"github.com/sevlyar/go-daemon"
+	daemon "github.com/sevlyar/go-daemon"
 	"github.com/urfave/cli"
 	"go.uber.org/ratelimit"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
 )
 
-const Version = "0.12.0"
+const Version = "0.12.1"
 
 // max int value
 const MaxUint = ^uint(0)
