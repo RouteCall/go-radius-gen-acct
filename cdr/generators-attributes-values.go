@@ -105,6 +105,6 @@ func FillCdr() *CdrValues {
 		SetupTime:      st,
 		CallerId:       "sip:" + dr + "@" + src_ip + ":5077",
 		CalleeId:       "sip:" + de + "@" + dst_ip + ":5060",
-		DstNumber:      d,
+		DstNumber:      de,
 	}
 }
