@@ -40,6 +40,7 @@ type Config struct {
 	LogFileName  string
 	PidFileName  string
 	Retry        int
+	MaxRetry     int
 	CustomFields string
 }
 
@@ -78,7 +79,7 @@ func ParseCdrAttributes(p *radius.Packet, c *cdr.CdrValues, cfg Config) {
 func SendAcct(c *cdr.CdrValues, mcf MapCustomFields, cfg Config) {
 	client := radius.Client{
 		Retry:           time.Second * time.Duration(cfg.Retry),
-		MaxPacketErrors: 0,
+		MaxPacketErrors: cfg.MaxRetry,
 	}
 	packet := radius.New(radius.CodeAccountingRequest, []byte(cfg.Key))
 	ParseCdrAttributes(packet, c, cfg)
@@ -86,7 +87,13 @@ func SendAcct(c *cdr.CdrValues, mcf MapCustomFields, cfg Config) {
 		AddCustomField(packet, mcf)
 	}
 
-	_, err := client.Exchange(context.Background(), packet, cfg.Server+":"+cfg.Port)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		time.Sleep(time.Second * time.Duration(cfg.Retry*cfg.MaxRetry))
+		cancel()
+	}()
+
+	_, err := client.Exchange(ctx, packet, cfg.Server+":"+cfg.Port)
 	if err != nil {
 		log.Fatal("error: ", err)
 		os.Exit(1)
@@ -156,6 +163,12 @@ func (cfg *Config) CliCreate() {
 			Value:       3,
 			Usage:       "interval in second, on which to resend packet (zero or negative value means no retry)",
 			Destination: &cfg.Retry,
+		},
+		cli.IntFlag{
+			Name:        "max-retry",
+			Value:       20,
+			Usage:       "max retrys before exit the program",
+			Destination: &cfg.MaxRetry,
 		},
 		cli.BoolFlag{
 			Name:  "stats, c",
