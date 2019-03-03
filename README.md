@@ -21,6 +21,7 @@ GLOBAL OPTIONS:
    --key value, -k value        key for acct
    --max-req value, -m value    stop the test and exit when max-req are reached (default: 9223372036854775807)
    --retry-int value, -r value  interval in second, on which to resend packet (zero or negative value means no retry) (default: 3)
+   --max-retry value            max retrys before exit the program (default: 20)
    --stats, -c                  show count of requests
    --daemon, -d                 daemon (background) proccess
    --log-file value             the destination file of the log (default: "./go-radius-gen-acct.log")
