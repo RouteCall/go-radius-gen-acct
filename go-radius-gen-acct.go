@@ -20,7 +20,7 @@ import (
 	"layeh.com/radius/rfc2865"
 )
 
-const Version = "0.12.2"
+const Version = "0.12.3"
 
 // max int value
 const MaxUint = ^uint(0)
